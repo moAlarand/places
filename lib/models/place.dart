@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
-class Location {
-  final double latitiude;
-  final double longitiude;
+class PlaceLocation {
+  final double latitude;
+  final double longitude;
   final String address;
 
-  Location({
-    @required this.longitiude,
-    @required this.latitiude,
+  const PlaceLocation({
+    @required this.latitude,
+    @required this.longitude,
     this.address,
   });
 }
@@ -17,13 +17,13 @@ class Location {
 class Place {
   final String id;
   final String title;
+  final PlaceLocation location;
   final File image;
-  final Location location;
 
   Place({
     @required this.id,
     @required this.title,
-    @required this.image,
     @required this.location,
+    @required this.image,
   });
 }

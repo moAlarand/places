@@ -1,66 +1,73 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider_pa';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart' as syspaths;
 
 class ImageInput extends StatefulWidget {
-  final Function _onSelectImage;
+  final Function onSelectImage;
 
-  ImageInput(this._onSelectImage);
+  ImageInput(this.onSelectImage);
+
   @override
   _ImageInputState createState() => _ImageInputState();
 }
 
 class _ImageInputState extends State<ImageInput> {
-  File pickedImage;
-  void _pickeImage() async {
-    pickedImage = await ImagePicker.pickImage(source: ImageSource.camera);
-    setState(() {});
-    // final appDir = sy
-    widget._onSelectImage(pickedImage);
+  File _storedImage;
+
+  Future<void> _takePicture() async {
+    final imageFile = await ImagePicker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 600,
+    );
+    if (imageFile == null) {
+      return;
+    }
+    setState(() {
+      _storedImage = imageFile;
+    });
+    final appDir = await syspaths.getApplicationDocumentsDirectory();
+    final fileName = path.basename(imageFile.path);
+    final savedImage = await imageFile.copy('${appDir.path}/$fileName');
+    widget.onSelectImage(savedImage);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Row(
-        children: <Widget>[
-          Container(
-            alignment: Alignment.center,
-            height: 100,
-            width: 150,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey,
-                width: 1,
-              ),
-            ),
-            child: pickedImage == null
-                ? Text(
-                    "no image yet!!",
-                    textAlign: TextAlign.center,
-                  )
-                : Image.file(
-                    pickedImage,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
+    return Row(
+      children: <Widget>[
+        Container(
+          width: 150,
+          height: 100,
+          decoration: BoxDecoration(
+            border: Border.all(width: 1, color: Colors.grey),
           ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: FlatButton.icon(
-                textColor: Theme.of(context).primaryColor,
-                icon: Icon(
-                  Icons.camera,
+          child: _storedImage != null
+              ? Image.file(
+                  _storedImage,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                )
+              : Text(
+                  'No Image Taken',
+                  textAlign: TextAlign.center,
                 ),
-                label: Text('Take a photo'),
-                onPressed: _pickeImage,
-              ),
-            ),
-          )
-        ],
-      ),
+          alignment: Alignment.center,
+        ),
+        SizedBox(
+          width: 10,
+        ),
+        Expanded(
+          child: FlatButton.icon(
+            icon: Icon(Icons.camera),
+            label: Text('Take Picture'),
+            textColor: Theme.of(context).primaryColor,
+            onPressed: _takePicture,
+          ),
+        ),
+      ],
     );
   }
 }
